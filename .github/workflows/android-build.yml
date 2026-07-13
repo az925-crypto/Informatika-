@@ -29,12 +29,10 @@ jobs:
         with:
           gradle-version: current
 
-      # Optional: isi GEMINI_API_KEY kalau ada fitur yang butuh.
-      # Tambahkan secret GEMINI_API_KEY di Settings > Secrets > Actions kalau perlu.
-      # Kalau tidak diisi, project otomatis fallback ke placeholder di .env.example.
-      - name: Create .env file
-        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
-        continue-on-error: true
+      # Note: .env sengaja tidak dibuat di sini. Kalau tidak ada, secrets-gradle-plugin
+      # otomatis fallback ke placeholder di .env.example (biar BuildConfig tetap valid).
+      # Kalau nanti mau isi GEMINI_API_KEY beneran, tambahkan step ini kembali
+      # setelah bikin secret GEMINI_API_KEY di Settings > Secrets > Actions.
 
       - name: Build debug APK
         run: gradle assembleDebug --stacktrace
