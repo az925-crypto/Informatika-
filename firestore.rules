@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Cara pakai:
+// 1. Buka Firebase Console -> project kamu -> Firestore Database -> tab "Rules"
+// 2. Copy-paste isi file ini, lalu klik "Publish"
+//
+// Catatan: rules di bawah ini butuh Firebase Anonymous Authentication aktif
+// (Authentication -> Sign-in method -> Anonymous -> Enable), dan aplikasi
+// harus signInAnonymously() sebelum baca/tulis Firestore. Ini standar minimum
+// supaya bukan sembarang orang di internet bisa nulis data lewat REST API.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Data master pengguna (karyawan/siswa).
+    // Dibaca bebas (dibutuhkan saat proses scan barcode untuk validasi ID),
+    // ditulis hanya oleh client yang sudah authenticated (admin app).
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Riwayat absensi hasil scan.
+    // Baca & tulis butuh authenticated (minimal anonymous auth aktif di app).
+    match /attendance_records/{recordId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['userId', 'date', 'status'])
+                    && request.resource.data.status is string;
+      allow update, delete: if request.auth != null;
+    }
+
+    // Konfigurasi aplikasi (jam kerja, toleransi telat, geofencing).
+    match /app_config/{configId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Data admin: JANGAN pernah dibaca/ditulis langsung dari client.
+    // Untuk login admin yang aman, idealnya migrasi ke Firebase Authentication
+    // (Email/Password), bukan simpan username+passwordHash sebagai dokumen biasa.
+    match /admins/{adminId} {
+      allow read, write: if false;
+    }
+
+    // Default: tolak semua yang tidak match rule di atas.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
