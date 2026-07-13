@@ -20,3 +20,4 @@ View your app in AI Studio: https://ai.studio/apps/6e18f855-9db4-46c1-995e-c32e6
 5. Remove this line from the app's `build.gradle.kts` file: `signingConfig = signingConfigs.getByName("debugConfig")`
 6. Run the app on an emulator or physical device
 # Informatika-
+# Informatika-
